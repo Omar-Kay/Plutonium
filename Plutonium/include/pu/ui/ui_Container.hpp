@@ -14,7 +14,8 @@
 #pragma once
 #include <pu/ui/elm/elm_Element.hpp>
 #include <vector>
-#include <bits/stdc++.h>
+#include <memory>
+#include <algorithm>
 
 namespace pu::ui {
 
