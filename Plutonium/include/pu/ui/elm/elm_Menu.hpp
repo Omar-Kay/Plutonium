@@ -107,16 +107,18 @@ namespace pu::ui::elm {
 
             using OnSelectionChangedCallback = std::function<void()>;
 
+        protected:
+            u32 selected_item_idx;
+            i32 prev_selected_item_idx;
+
         private:
             i32 x;
             i32 y;
             i32 w;
             i32 items_h;
             u32 items_to_show;
-            u32 selected_item_idx;
             i32 selected_item_alpha;
             SigmoidIncrementer<i32> selected_item_alpha_incr;
-            i32 prev_selected_item_idx;
             i32 prev_selected_item_alpha;
             SigmoidIncrementer<i32> prev_selected_item_alpha_incr;
             u32 advanced_item_count;
