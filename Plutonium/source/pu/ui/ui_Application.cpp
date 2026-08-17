@@ -10,6 +10,7 @@ namespace pu::ui {
         this->on_ipt_cb = {};
         this->in_render_over = false;
         this->ovl = nullptr;
+        this->ovl_timeout_ms = 0;
         this->lyt = nullptr;
         this->loaded = false;
         this->render_over_fn = {};
