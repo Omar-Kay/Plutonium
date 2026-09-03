@@ -71,7 +71,8 @@ namespace pu::ttf {
             Font(const u32 font_sz) : font_size(font_sz) {}
             ~Font();
 
-            i32 LoadFromMemory(void *ptr, const size_t size, FontFaceDisposingFunction disp_fn);
+            // scale opens the face at a fraction of the font size: fallback faces whose glyphs fill the em box (CJK, symbols) then match a Latin primary's cap height
+            i32 LoadFromMemory(void *ptr, const size_t size, FontFaceDisposingFunction disp_fn, const float scale = 1.0f);
             i32 LoadFromFile(const std::string &path);
             void Unload(const i32 font_idx);
 

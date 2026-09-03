@@ -21,9 +21,10 @@ namespace pu::ttf {
         }
     }
 
-    i32 Font::LoadFromMemory(void *ptr, const size_t size, FontFaceDisposingFunction disp_fn) {
+    i32 Font::LoadFromMemory(void *ptr, const size_t size, FontFaceDisposingFunction disp_fn, const float scale) {
         const auto idx = rand();
-        auto font = std::make_unique<FontFace>(ptr, size, disp_fn, this->font_size, reinterpret_cast<void*>(this));
+        const auto face_size = static_cast<u32>(this->font_size * scale + 0.5f);
+        auto font = std::make_unique<FontFace>(ptr, size, disp_fn, face_size, reinterpret_cast<void*>(this));
         this->font_faces.push_back({ idx, std::move(font) });
         return idx;
     }

@@ -32,6 +32,7 @@ struct RendererInitOptions {
     u32 width;
     u32 height;
     std::vector<PlSharedFontType> default_shared_fonts;
+    float default_shared_font_scale;
     std::vector<std::string> default_font_paths;
     std::vector<u32> extra_default_font_sizes;
     bool init_mixer;
@@ -54,6 +55,7 @@ struct RendererInitOptions {
         width(w),
         height(h),
         default_shared_fonts(),
+      default_shared_font_scale(1.0f),
         default_font_paths(),
         extra_default_font_sizes(),
         init_mixer(false),
@@ -66,6 +68,9 @@ struct RendererInitOptions {
         pad_style_tag(0) {}
 
     inline void AddDefaultSharedFont(const PlSharedFontType type) { this->default_shared_fonts.push_back(type); }
+
+    // Size of the shared faces relative to the font size (see ttf::Font::LoadFromMemory)
+    inline void SetDefaultSharedFontScale(const float scale) { this->default_shared_font_scale = scale; }
 
     inline void AddDefaultAllSharedFonts() {
         for (u32 i = 0; i < PlSharedFontType_Total; i++) {
@@ -256,7 +261,7 @@ std::pair<u32, u32> GetDimensions();
 
 bool AddFont(const std::string& font_name, std::shared_ptr<ttf::Font>& font);
 
-bool LoadSingleSharedFontInFont(std::shared_ptr<ttf::Font>& font, const PlSharedFontType type);
+bool LoadSingleSharedFontInFont(std::shared_ptr<ttf::Font>& font, const PlSharedFontType type, const float scale = 1.0f);
 bool LoadAllSharedFontsInFont(std::shared_ptr<ttf::Font>& font);
 
 inline void AddDefaultFont(std::shared_ptr<ttf::Font>& font) {

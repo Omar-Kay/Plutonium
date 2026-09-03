@@ -64,8 +64,9 @@ void Renderer::Initialize() {
             for (const auto& path : this->init_opts.default_font_paths) {  \
                 default_font->LoadFromFile(path);                          \
             }                                                              \
-            for (const auto type : this->init_opts.default_shared_fonts) { \
-                LoadSingleSharedFontInFont(default_font, type);            \
+            const auto scale = this->init_opts.default_shared_font_scale; \
+            for (const auto type : this->init_opts.default_shared_fonts) {\
+                LoadSingleSharedFontInFont(default_font, type, scale);    \
             }                                                              \
             AddDefaultFont(default_font);                                  \
         }                                                                  \
@@ -384,14 +385,14 @@ bool AddFont(const std::string& font_name, std::shared_ptr<ttf::Font>& font) {
     return true;
 }
 
-bool LoadSingleSharedFontInFont(std::shared_ptr<ttf::Font>& font, const PlSharedFontType type) {
+bool LoadSingleSharedFontInFont(std::shared_ptr<ttf::Font>& font, const PlSharedFontType type, const float scale) {
     // Assume pl services are initialized, and return if anything unexpected happens
     PlFontData data = {};
     if (R_FAILED(plGetSharedFontByType(&data, type))) {
         return false;
     }
     if (!ttf::Font::IsValidFontFaceIndex(
-            font->LoadFromMemory(data.address, data.size, ttf::Font::EmptyFontFaceDisposingFunction)
+            font->LoadFromMemory(data.address, data.size, ttf::Font::EmptyFontFaceDisposingFunction, scale)
         )) {
         return false;
     }
