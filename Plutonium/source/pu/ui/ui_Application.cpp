@@ -9,6 +9,7 @@ namespace pu::ui {
         this->is_shown = false;
         this->on_ipt_cb = {};
         this->in_render_over = false;
+        this->render_count = 0;
         this->ovl = nullptr;
         this->ovl_timeout_ms = 0;
         this->lyt = nullptr;
@@ -98,6 +99,7 @@ namespace pu::ui {
         }
 
         auto continue_render = true;
+        this->render_count++;
         this->renderer->InitializeRender(this->lyt->GetBackgroundColor());
         this->OnRender();
         if(this->in_render_over) {
@@ -161,6 +163,10 @@ namespace pu::ui {
         const auto keys_held = this->GetButtonsHeld();
         auto start_lyt = this->lyt;
         auto lyt_changed = false;
+        // A callback may render and present frames of its own (a dialog); the frame it
+        // interrupted then starts over on a cleared buffer instead of drawing on top of what
+        // those frames left behind
+        const auto frame = this->render_count;
 
         #define _ONLY_DO_UNCHANGED(...) { \
             if(!lyt_changed) { \
@@ -222,17 +228,41 @@ namespace pu::ui {
                 );
             }
         }
+        if(this->render_count != frame) {
+            this->renderer->InitializeRender(this->lyt->GetBackgroundColor());
+            if(!lyt_changed && (lyt_bg_tex != nullptr)) {
+                this->renderer->RenderTexture(lyt_bg_tex->Get(), 0, 0);
+            }
+        }
 
         auto lyt_elems = this->lyt->GetElements();
+        auto redraw = false;
         for(auto &elem: lyt_elems) {
             _ONLY_DO_UNCHANGED(
                 if(elem->IsVisible()) {
                     elem->OnRender(this->renderer, elem->GetProcessedX(), elem->GetProcessedY());
                     if(!this->in_render_over) {
+                        const auto before = this->render_count;
                         elem->OnInput(keys_down, keys_up, keys_held, tch_pos);
+                        redraw |= this->render_count != before;
                     }
                 }
             );
+        }
+        if(redraw) {
+            // The same when an element's input handler rendered: what was drawn before it is
+            // stale; a layout that changed meanwhile gets its colour and draws next frame
+            this->renderer->InitializeRender(this->lyt->GetBackgroundColor());
+            if(!lyt_changed) {
+                if(lyt_bg_tex != nullptr) {
+                    this->renderer->RenderTexture(lyt_bg_tex->Get(), 0, 0);
+                }
+                for(auto &elem: lyt_elems) {
+                    if(elem->IsVisible()) {
+                        elem->OnRender(this->renderer, elem->GetProcessedX(), elem->GetProcessedY());
+                    }
+                }
+            }
         }
 
         if(this->ovl != nullptr) {

@@ -32,6 +32,7 @@ namespace pu::ui {
             bool loaded;
             bool in_render_over;
             RenderOverFunction render_over_fn;
+            u32 render_count; // Frames presented so far; a callback that renders its own bumps it
             bool is_shown;
             u8 fade_alpha_increment_steps;
             SigmoidIncrementer<i32> fade_alpha_incr;
