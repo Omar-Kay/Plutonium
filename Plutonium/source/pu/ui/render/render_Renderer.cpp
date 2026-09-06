@@ -51,6 +51,11 @@ void Renderer::Initialize() {
 
         SDL_Init(this->init_opts.sdl_flags);
         stage("sdl");
+        // A 2D renderer never tests depth, but the default config attaches a depth-stencil plane
+        // to the window, memory that comes out of the process heap on the console. On this
+        // platform the EGL surface, and so its config, is built inside SDL_CreateWindow
+        SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 0);
+        SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 0);
         g_Window = SDL_CreateWindow("Plutonium-SDL2", 0, 0, this->init_opts.width, this->init_opts.height, 0);
         stage("window");
         g_Renderer = SDL_CreateRenderer(g_Window, -1, this->init_opts.sdl_render_flags);
