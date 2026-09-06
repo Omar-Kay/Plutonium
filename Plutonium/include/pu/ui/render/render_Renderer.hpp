@@ -12,6 +12,7 @@
 
 #pragma once
 #include <pu/ttf/ttf_Font.hpp>
+#include <functional>
 #include <pu/ui/render/render_SDL2.hpp>
 #include <pu/ui/ui_Types.hpp>
 #include <vector>
@@ -43,6 +44,7 @@ struct RendererInitOptions {
     u32 pad_player_count;
     u64 pad_id_mask;
     u32 pad_style_tag;
+    std::function<void(const char*)> init_stage_cb; // Told the name of each Initialize stage as it completes
 
     RendererInitOptions(
         const u32 sdl_flags,
@@ -71,6 +73,9 @@ struct RendererInitOptions {
 
     // Size of the shared faces relative to the font size (see ttf::Font::LoadFromMemory)
     inline void SetDefaultSharedFontScale(const float scale) { this->default_shared_font_scale = scale; }
+
+    // Lets the application measure what each stage of Initialize costs (memory, time)
+    inline void SetInitStageCallback(std::function<void(const char*)> cb) { this->init_stage_cb = std::move(cb); }
 
     inline void AddDefaultAllSharedFonts() {
         for (u32 i = 0; i < PlSharedFontType_Total; i++) {

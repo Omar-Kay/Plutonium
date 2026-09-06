@@ -27,15 +27,22 @@ inline bool ExistsFont(const std::string& font_name) {
 void Renderer::Initialize() {
     if (!this->initialized) {
         this->ttf_init = false;
+        const auto stage = [this](const char* name) {
+            if (this->init_opts.init_stage_cb) {
+                this->init_opts.init_stage_cb(name);
+            }
+        };
 
         if (this->init_opts.init_romfs) {
             this->ok_romfs = R_SUCCEEDED(romfsInit());
         }
+        stage("romfs");
 
         if (!this->init_opts.default_shared_fonts.empty()) {
             // TODO: choose pl service type?
             this->ok_pl = R_SUCCEEDED(plInitialize(PlServiceType_User));
         }
+        stage("pl");
 
         padConfigureInput(this->init_opts.pad_player_count, this->init_opts.pad_style_tag);
         padInitializeWithMask(&this->input_pad, this->init_opts.pad_id_mask);
@@ -43,8 +50,11 @@ void Renderer::Initialize() {
         // TODO: check sdl return errcodes!
 
         SDL_Init(this->init_opts.sdl_flags);
+        stage("sdl");
         g_Window = SDL_CreateWindow("Plutonium-SDL2", 0, 0, this->init_opts.width, this->init_opts.height, 0);
+        stage("window");
         g_Renderer = SDL_CreateRenderer(g_Window, -1, this->init_opts.sdl_render_flags);
+        stage("renderer");
         g_WindowSurface = SDL_GetWindowSurface(g_Window);
         SDL_SetRenderDrawBlendMode(g_Renderer, SDL_BLENDMODE_BLEND);
         SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "2");
@@ -52,10 +62,12 @@ void Renderer::Initialize() {
         if (this->init_opts.init_img) {
             IMG_Init(this->init_opts.sdl_img_flags);
         }
+        stage("img");
 
         if (!this->init_opts.default_shared_fonts.empty() || !this->init_opts.default_font_paths.empty()) {
             TTF_Init();
             this->ttf_init = true;
+            stage("ttf");
 
 #define _CREATE_DEFAULT_FONT_FOR_SIZES(sizes)                              \
     {                                                                      \
@@ -75,11 +87,13 @@ void Renderer::Initialize() {
             _CREATE_DEFAULT_FONT_FOR_SIZES(DefaultFontSizes);
             _CREATE_DEFAULT_FONT_FOR_SIZES(this->init_opts.extra_default_font_sizes);
         }
+        stage("fonts");
 
         if (this->init_opts.init_mixer) {
             Mix_Init(this->init_opts.audio_mixer_flags);
             Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 4096);
         }
+        stage("mixer");
 
         this->initialized = true;
         this->base_a = TextureRenderOptions::NoAlpha;
